@@ -10,7 +10,8 @@ from app import app
 from app.forms import UploadForm
 from flask import render_template, request, jsonify, send_file
 import os
-
+from flask_wtf.csrf import generate_csrf
+from werkzeug.utils import secure_filename
 
 ###
 # Routing for your application.
@@ -24,10 +25,17 @@ def index():
 def upload():
     form = UploadForm()
     if form.validate_on_submit():
-        photo = photo.data
-        description = description.data
-        return jsonify({"message": "File Upload Successful", "filename": "your-uploaded-file.jpg", "description": "Some description for your image"})
-    return jsonify({"errors": [{}, {}].form_errors(form)})
+        photo = form.photo.data
+        description = form.description.data
+        filename = secure_filename(photo.filename)
+        photo.save(os.path.join(app.config['UPLOAD_FOLDER'],filename)) 
+
+        return jsonify({"message": "File Upload Successful", "filename": filename, "description": description})
+    return jsonify({"errors": [{}, {}]}, form_errors(form), get_csrf())
+
+@app.route('/api/csrf-token', methods=['GET'])
+def get_csrf():
+    return jsonify({'csrf_token': generate_csrf()})
 
 ###
 # The functions below should be applicable to all Flask apps.
