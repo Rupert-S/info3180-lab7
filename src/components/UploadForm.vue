@@ -1,6 +1,5 @@
 <template>
      <form @submit.prevent="uploadPhoto" class="uploadForm" id="uploadForm" >
-    
         <label for="photo">Photo:</label>
         <input type="file" id="photo" name="photo">
         <label for="description">Description:</label>
@@ -13,7 +12,8 @@
 export default {
     data() {
         return {
-            csrf_token: ''
+            csrf_token: '',
+            message:[], error:[]
         }
     },
     created() {
@@ -23,6 +23,7 @@ export default {
         uploadPhoto() {
             let uploadForm = document.getElementById('uploadForm');
             let form_data = new FormData(uploadForm);
+            let self = this;
             fetch("/api/upload", {
                 method: 'POST',
                 body: form_data,
@@ -36,9 +37,11 @@ export default {
             .then(function (data) {
                 // display a success message
                 console.log(data);
+                self.message = data.message;
             })
             .catch(function (error) {
                 console.log(error);
+                self.error = error;
             });
         },
         getCsrfToken() {
